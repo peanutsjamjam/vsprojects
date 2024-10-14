@@ -17,7 +17,7 @@ private:
 	std::wstring m_cmd;
 protected:
 public:
-	Sakura(const WCHAR* files);
+	Sakura(const WCHAR* tmpdir, const WCHAR* files);
 	virtual ~Sakura();
 	void setOpt(char k, int v);
 	int getOpt(char k);

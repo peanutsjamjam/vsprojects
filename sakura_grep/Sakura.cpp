@@ -6,15 +6,21 @@
 #include <Windows.h>
 #include "Sakura.h"
 
-Sakura::Sakura(const WCHAR* files)
-	: m_tmpdir{ L"C:\\Mail\\tmp\\" }
+Sakura::Sakura(const WCHAR* tmpdir, const WCHAR* files)
+	: m_tmpdir{ tmpdir }
 	, m_files{ files }
 	, m_folder{ L"." }
 {
+	size_t sz;
+	sz = m_tmpdir.size();
+	if (sz >= 2 && m_tmpdir[sz - 1] != L'\\') {
+		m_tmpdir.append(L"\\");
+	}
+
 	WCHAR cwd[MAX_PATH];
 	(void)_wgetcwd(cwd, MAX_PATH);
 	m_cwd = cwd;
-	std::wstring::size_type sz = m_cwd.size();
+	sz = m_cwd.size();
 	if (sz >= 2 && m_cwd[sz - 1] != L'\\') {
 		m_cwd.append(L"\\");
 	}
@@ -51,10 +57,11 @@ void Sakura::mkFileName()
 	localtime_s(&_tm, &_t);
 
 	WCHAR fn[64];
-	swprintf_s(fn, L"grep_log_%04d%02d%02d%02d%02d%02d.txt", _tm.tm_year + 1900, _tm.tm_mon + 1, _tm.tm_mday, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
+	swprintf_s(fn, L"sgrep_log_%04d%02d%02d%02d%02d%02d.txt", _tm.tm_year + 1900, _tm.tm_mon + 1, _tm.tm_mday, _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
 	m_tmpfile.clear();
 	m_tmpfile.append(m_tmpdir);
 	m_tmpfile.append(fn);
+	wprintf(L"%s\n", m_tmpfile.c_str());
 }
 
 void Sakura::mkCommand()
@@ -125,13 +132,13 @@ void Sakura::printResult()
 	FILE* stream = nullptr;
 
 	if (_wfopen_s(&stream, m_tmpfile.c_str(), L"r, ccs=UTF-8") != 0) {
-		fprintf(stderr, "error\n");
+		fprintf(stderr, "_wfopen_s error\n");
 		return;
 	}
 
 	WCHAR str[1024];
 	if (fgetws(str, 1024, stream) == nullptr) {
-		fprintf(stderr, "error\n");
+		fprintf(stderr, "fgetws error\n");
 		return;
 	}
 
